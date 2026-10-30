@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BidVelocity — Online Auctions</title>
+    <meta name="description" content="Discover interesting finds, place a bid, and shop auctions on BidVelocity." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ==================== NAV ==================== -->
+<nav class="navbar" id="navbar">
+    <div class="nav-brand">
+        <span class="brand-icon" aria-hidden="true">B</span>
+        <span class="brand-name">BidVelocity</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="#" onclick="showPage('home')" class="nav-link active" id="nav-home">Home</a></li>
+        <li><a href="#" onclick="showPage('auctions')" class="nav-link" id="nav-auctions">Browse Auctions</a></li>
+        <li><a href="#" onclick="showPage('bids')" class="nav-link" id="nav-bids">My Bids</a></li>
+        <li><a href="#" onclick="showPage('sell')" class="nav-link" id="nav-sell">Sell an Item</a></li>
+    </ul>
+    <div class="nav-auth" id="navAuth">
+        <button class="btn btn-outline" onclick="openModal('loginModal')">Login</button>
+        <button class="btn btn-primary" onclick="openModal('registerModal')">Register</button>
+    </div>
+    <div class="nav-user hidden" id="navUser">
+        <span class="user-badge" id="userBadge"></span>
+        <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<!-- ==================== PAGES ==================== -->
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+    <section class="hero">
+        <div class="hero-content">
+            <p class="eyebrow">Good finds, fair bids</p>
+            <h1 class="hero-title">Find great deals at auction</h1>
+            <p class="hero-sub">Discover interesting items, place your bids, and win something you love.</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-lg" onclick="showPage('auctions')">Browse Auctions</button>
+                <button class="btn btn-outline btn-lg" onclick="showPage('sell')">Start Selling</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="market-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">A few worth a look</p>
+                <h2 class="section-title">Featured Auctions</h2>
+            </div>
+            <button class="text-link" onclick="showPage('auctions')">See all auctions</button>
+        </div>
+        <div class="auctions-grid" id="featuredGrid"></div>
+    </section>
+    <section class="market-section recently-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Fresh on the marketplace</p>
+                <h2 class="section-title">Recently Added</h2>
+            </div>
+        </div>
+        <div class="auctions-grid" id="recentGrid"></div>
+    </section>
+</div>
+
+<!-- AUCTIONS PAGE -->
+<div id="page-auctions" class="page">
+    <div class="page-header">
+        <h1 class="page-title">Browse Auctions</h1>
+        <div class="page-actions">
+            <input class="form-input search-input" id="auctionSearch" type="search" placeholder="Search items" aria-label="Search auctions" />
+            <select class="filter-select" id="categoryFilter" aria-label="Filter by category">
+                <option value="ALL">All categories</option>
+                <option>Electronics</option>
+                <option>Watches</option>
+                <option>Fashion</option>
+                <option>Collectibles</option>
+                <option>Home &amp; Living</option>
+            </select>
+            <select class="filter-select" id="auctionSort" aria-label="Sort auctions">
+                <option value="ENDING">Ending Soon</option>
+                <option value="RECENT">Recently Added</option>
+                <option value="LOWEST">Lowest Bid</option>
+            </select>
+        </div>
+    </div>
+    <div class="auctions-grid" id="auctionsGrid">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading auctions…</p>
+        </div>
+    </div>
+</div>
+
+<!-- MY BIDS PAGE -->
+<div id="page-bids" class="page">
+    <div class="page-header">
+        <h1 class="page-title">My Bids</h1>
+    </div>
+    <div class="bids-container" id="bidsContainer">
+        <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <p>Login to view your bids</p>
+            <button class="btn btn-primary" onclick="openModal('loginModal')">Login Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- SELL PAGE -->
+<div id="page-sell" class="page">
+    <div class="page-header">
+        <div>
+            <p class="eyebrow">Give a good find a new home</p>
+            <h1 class="page-title">Sell an Item</h1>
+        </div>
+    </div>
+    <div class="sell-panel">
+        <form id="createAuctionForm" onsubmit="handleCreateAuction(event)">
+            <div class="form-group">
+                <label for="auctionTitle">Item name</label>
+                <input type="text" id="auctionTitle" class="form-input" placeholder="e.g. Vintage film camera" maxlength="120" required />
+            </div>
+            <div class="form-group">
+                <label for="auctionDesc">Description</label>
+                <textarea id="auctionDesc" class="form-input form-textarea" placeholder="Tell bidders a little about the item" maxlength="1000" required></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="auctionCategory">Category</label>
+                    <select id="auctionCategory" class="form-input" required>
+                        <option value="">Choose a category</option>
+                        <option>Electronics</option>
+                        <option>Watches</option>
+                        <option>Fashion</option>
+                        <option>Collectibles</option>
+                        <option>Home &amp; Living</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="auctionBid">Starting price (₹)</label>
+                    <input type="number" id="auctionBid" class="form-input" placeholder="1000" min="1" step="1" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="auctionImage">Product image URL</label>
+                <input type="url" id="auctionImage" class="form-input" placeholder="https://example.com/item.jpg" />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="auctionStart">Auction starts</label>
+                    <input type="datetime-local" id="auctionStart" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label for="auctionEnd">Auction ends</label>
+                    <input type="datetime-local" id="auctionEnd" class="form-input" required />
+                </div>
+            </div>
+            <p class="form-note">Item details, starting price, and auction dates are saved with your listing. Category and image URL are not saved yet.</p>
+            <div class="form-error hidden" id="auctionError"></div>
+            <button type="submit" class="btn btn-primary">Create Listing</button>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal" onclick="closeModalOnOverlay(event,'loginModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Welcome back</h3>
+            <button class="modal-close" type="button" aria-label="Close" onclick="closeModal('loginModal')">×</button>
+        </div>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" class="form-input" placeholder="Enter your username" autocomplete="username" required />
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" autocomplete="current-password" required />
+            </div>
+            <div class="form-error hidden" id="loginError"></div>
+            <button type="submit" class="btn btn-primary btn-full">Login</button>
+            <p class="modal-switch">No account? <a href="#" onclick="switchModal('loginModal','registerModal')">Register</a></p>
+        </form>
+    </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="registerModal" onclick="closeModalOnOverlay(event,'registerModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Create your account</h3>
+            <button class="modal-close" type="button" aria-label="Close" onclick="closeModal('registerModal')">×</button>
+        </div>
+        <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label for="regUsername">Username</label>
+                <input type="text" id="regUsername" class="form-input" placeholder="Choose a username" autocomplete="username" minlength="3" required />
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" class="form-input" placeholder="you@example.com" autocomplete="email" required />
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" class="form-input" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required />
+            </div>
+            <div class="form-error hidden" id="registerError"></div>
+            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            <p class="modal-switch">Already registered? <a href="#" onclick="switchModal('registerModal','loginModal')">Login</a></p>
+        </form>
+    </div>
+</div>
+
+<!-- AUCTION DETAILS -->
+<div class="modal-overlay" id="auctionDetailsModal" onclick="closeModalOnOverlay(event,'auctionDetailsModal')">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 id="detailTitle">Auction details</h3>
+            <button class="modal-close" type="button" aria-label="Close" onclick="closeModal('auctionDetailsModal')">×</button>
+        </div>
+        <div class="detail-layout">
+            <img class="detail-image" id="detailImage" alt="" />
+            <div class="detail-copy">
+                <p class="detail-category" id="detailCategory"></p>
+                <p id="detailDescription"></p>
+                <dl class="detail-facts">
+                    <div><dt>Current highest bid</dt><dd id="detailCurrentBid"></dd></div>
+                    <div><dt>Minimum next bid</dt><dd id="detailMinimumBid"></dd></div>
+                    <div><dt>Auction ends</dt><dd id="detailEndTime"></dd></div>
+                </dl>
+                <p class="form-note hidden" id="previewNotice">This is a sample listing. Bidding is only available on live auctions.</p>
+            </div>
+        </div>
+        <form id="placeBidForm" onsubmit="handlePlaceBid(event)">
+            <input type="hidden" id="bidAuctionId" />
+            <div class="form-group">
+                <label for="bidAmount">Your bid (₹)</label>
+                <input type="number" id="bidAmount" class="form-input" placeholder="Enter your bid" min="1" step="1" required />
+            </div>
+            <div class="form-error hidden" id="bidError"></div>
+            <button type="submit" class="btn btn-primary">Place Bid</button>
+        </form>
+    </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
